@@ -26,3 +26,8 @@ spring:
         max-wait: -1
         max-idle: 8
         min-idle: 1
+
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java

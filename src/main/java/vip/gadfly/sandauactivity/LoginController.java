@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 import vip.gadfly.sandauactivity.utils.QQLoginUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +30,14 @@ public class LoginController {
     private RestTemplate restTemplate;
 
     @PostMapping("/login/callback")
-    public String handleCallbackCode(HttpServletRequest req, HttpServletResponse resp) throws JsonProcessingException {
+    public GlobalJSONResult handleCallbackCode(HttpServletRequest req, HttpServletResponse resp) throws JsonProcessingException {
         String authorization_code = req.getParameter("code");
         if (authorization_code != null && !authorization_code.trim().isEmpty()) {
             //client端的状态值。用于第三方应用防止CSRF攻击。
             String state = req.getParameter("state");
             if (!state.equals("login")) {
                 logger.error("client端的状态值不匹配！");
+                return GlobalJSONResult.errorMsg("state无效，请确认是否为本人操作！");
             }
             String urlForAccessToken = getUrlForAccessToken(authorization_code);
             String firstCallbackInfo = restTemplate.getForObject(urlForAccessToken, String.class);
@@ -67,11 +69,12 @@ public class LoginController {
 
                 String openid = ((String) hashMap.get("openid"));
                 String token = JWTUtil.sign(openid, UUID.nameUUIDFromBytes(openid.getBytes()).toString());
-                return token;
+                return GlobalJSONResult.ok(token);
             }
         } else {
+            return GlobalJSONResult.errorMsg("code无效，请重新授权！");
         }
-        return authorization_code;
+        return null;
     }
 
     public static String getUrlForAccessToken(String authorization_code) {
