@@ -1,8 +1,7 @@
-package vip.gadfly.sandauactivity;
+package vip.gadfly.sandauactivity.pojo;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 
 import javax.servlet.http.HttpServletRequest;
 

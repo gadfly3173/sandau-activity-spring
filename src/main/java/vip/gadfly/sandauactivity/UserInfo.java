@@ -13,7 +13,11 @@ public class UserInfo {
 
     private String nickname;
 
+    private String accessLevel;
+
     private String createTime;
+
+    private String avatarUrl;
 
     public UserInfo() {
 
@@ -49,5 +53,21 @@ public class UserInfo {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
+    }
+
+    public String getAccessLevel() {
+        return accessLevel;
+    }
+
+    public void setAccessLevel(String accessLevel) {
+        this.accessLevel = accessLevel;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

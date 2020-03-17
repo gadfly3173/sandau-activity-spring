@@ -61,6 +61,7 @@ public class LoginController {
                 Matcher matcher = pattern.matcher(secondCallbackInfo);
                 if(!matcher.find()){
                     logger.error("异常的回调值: " + secondCallbackInfo);
+                    return GlobalJSONResult.errorMsg("异常的回调值: " + secondCallbackInfo);
                 }
 
                 //调用jackson
@@ -68,13 +69,26 @@ public class LoginController {
                 HashMap hashMap = objectMapper.readValue(matcher.group(0), HashMap.class);
 
                 String openid = ((String) hashMap.get("openid"));
+
+                // 获取QQ用户信息
+                String user_info_url = getUserInfoUrl(access_token, openid);
+                String user_result = restTemplate.getForObject(user_info_url, String.class);
+                HashMap user_info_qq = objectMapper.readValue(user_result, HashMap.class);
+                if (!user_info_qq.get("ret").equals(0)) {
+                    return GlobalJSONResult.errorMsg("用户信息获取失败，请重试");
+                }
+
                 String token = JWTUtil.sign(openid, UUID.nameUUIDFromBytes(openid.getBytes()).toString());
-                return GlobalJSONResult.ok(token);
+
+                user_info_qq.put("token", token);
+                return GlobalJSONResult.ok(user_info_qq);
+            }
+            else {
+                return GlobalJSONResult.errorMsg("access_token获取失败，请重新授权！");
             }
         } else {
             return GlobalJSONResult.errorMsg("code无效，请重新授权！");
         }
-        return null;
     }
 
     public static String getUrlForAccessToken(String authorization_code) {
@@ -87,6 +101,13 @@ public class LoginController {
                         "?grant_type=%s&client_id=%s&client_secret=%s&code=%s&redirect_uri=%s",
                 grant_type, client_id, client_secret, authorization_code, redirect_uri);
 
+        return url;
+    }
+
+    public static String getUserInfoUrl(String access_token, String openid) {
+        String client_id = QQLoginUtil.getQQLoginInfo("client_id");
+        String url = String.format("https://graph.qq.com/user/get_user_info" +
+                "?access_token=%s&oauth_consumer_key=%s&openid=%s", access_token, client_id, openid);
         return url;
     }
 

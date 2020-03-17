@@ -2,9 +2,6 @@ package vip.gadfly.sandauactivity.pojo;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import vip.gadfly.sandauactivity.utils.JWTUtil;
 
 import java.util.List;
 
@@ -20,8 +17,6 @@ import java.util.List;
  * 				555：异常抛出信息
  */
 public class GlobalJSONResult {
-
-    private final static Logger logger = LoggerFactory.getLogger(GlobalJSONResult.class);
 
     // 定义jackson对象
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -111,7 +106,7 @@ public class GlobalJSONResult {
 
     /**
      *
-     * @Description: 将json结果集转化为LeeJSONResult对象
+     * @Description: 将json结果集转化为Result对象
      * 				需要转换的对象是一个类
      */
     public static GlobalJSONResult formatToPojo(String jsonData, Class<?> clazz) {
