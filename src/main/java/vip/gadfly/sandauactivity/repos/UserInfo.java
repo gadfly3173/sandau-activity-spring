@@ -1,4 +1,4 @@
-package vip.gadfly.sandauactivity;
+package vip.gadfly.sandauactivity.repos;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -17,10 +17,27 @@ public class UserInfo {
 
     private String createTime;
 
+    private String updateTime;
+
     private String avatarUrl;
+
+    private String stuNum;
+
+    private String name;
+
+    private String phone;
+
 
     public UserInfo() {
 
+    }
+
+    public UserInfo(String id, String openid, String nickname, String avatarUrl, String createTime) {
+        this.id = id;
+        this.openid = openid;
+        this.nickname = nickname;
+        this.createTime = createTime;
+        this.avatarUrl = avatarUrl;
     }
 
     public String getId() {
@@ -69,5 +86,37 @@ public class UserInfo {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getStuNum() {
+        return stuNum;
+    }
+
+    public void setStuNum(String stuNum) {
+        this.stuNum = stuNum;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(String updateTime) {
+        this.updateTime = updateTime;
     }
 }

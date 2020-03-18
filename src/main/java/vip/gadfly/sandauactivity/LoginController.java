@@ -4,14 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
+import vip.gadfly.sandauactivity.repos.UserInfo;
+import vip.gadfly.sandauactivity.repos.UserInfoRepository;
 import vip.gadfly.sandauactivity.utils.QQLoginUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -26,6 +30,9 @@ import vip.gadfly.sandauactivity.utils.JWTUtil;
 public class LoginController {
 
     private final static Logger logger = LoggerFactory.getLogger(LoginController.class);
+
+    @Autowired//注入实例
+    private UserInfoRepository userInfoRepository;
 
     private RestTemplate restTemplate;
 
@@ -45,7 +52,7 @@ public class LoginController {
             String access_token = null;
             for (String param : params) {
                 String[] keyvalue = param.split("=");
-                if(keyvalue[0].equals("access_token")){
+                if (keyvalue[0].equals("access_token")) {
                     access_token = keyvalue[1];
                     break;
                 }
@@ -59,7 +66,7 @@ public class LoginController {
                 String regex = "\\{.*\\}";
                 Pattern pattern = Pattern.compile(regex);
                 Matcher matcher = pattern.matcher(secondCallbackInfo);
-                if(!matcher.find()){
+                if (!matcher.find()) {
                     logger.error("异常的回调值: " + secondCallbackInfo);
                     return GlobalJSONResult.errorMsg("异常的回调值: " + secondCallbackInfo);
                 }
@@ -78,12 +85,17 @@ public class LoginController {
                     return GlobalJSONResult.errorMsg("用户信息获取失败，请重试");
                 }
 
-                String token = JWTUtil.sign(openid, UUID.nameUUIDFromBytes(openid.getBytes()).toString());
+                String uid = UUID.nameUUIDFromBytes(openid.getBytes()).toString();
+                if (userInfoRepository.findById(uid).orElse(null) == null) {
+                    UserInfo userInfo = new UserInfo(uid, openid, user_info_qq.get("nickname").toString(),
+                            user_info_qq.get("figureurl_2").toString(), new Date().toString());
+                    userInfoRepository.save(userInfo);
+                }
+                String token = JWTUtil.sign(openid, uid);
 
                 user_info_qq.put("token", token);
                 return GlobalJSONResult.ok(user_info_qq);
-            }
-            else {
+            } else {
                 return GlobalJSONResult.errorMsg("access_token获取失败，请重新授权！");
             }
         } else {
