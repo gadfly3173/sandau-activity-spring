@@ -91,7 +91,7 @@ public class LoginController {
                             user_info_qq.get("figureurl_2").toString(), new Date().toString());
                     userInfoRepository.save(userInfo);
                 }
-                String token = JWTUtil.sign(openid, uid);
+                String token = JWTUtil.sign(openid);
 
                 user_info_qq.put("token", token);
                 return GlobalJSONResult.ok(user_info_qq);

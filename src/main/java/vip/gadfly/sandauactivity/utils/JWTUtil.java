@@ -8,39 +8,49 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
+@Component
 public class JWTUtil {
 
     private final static Logger logger = LoggerFactory.getLogger(JWTUtil.class);
 
     @Autowired
-    private static RedisTemplate<Object, Object> stringRedisTemplate;
+    private RedisUtils nonStaticRedisUtils;
+
+    private static RedisUtils redisUtils;
+    @PostConstruct
+    public void init() {
+        redisUtils = nonStaticRedisUtils;
+    }
 
     // 过期时间7天
-    private static final long EXPIRE_TIME = 7 * 24 * 60 * 1000;
+    private static final long EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000;
 
     /**
      * 生成签名,7days后过期
      *
      * @param openid qq_openid
-     * @param secret uid
      * @return 加密的token
      */
-    public static String sign(String openid, String secret) {
+    public static String sign(String openid) {
         Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
+        if (redisUtils.hasKey(openid)) {
+            redisUtils.del(openid);
+        }
+        String secret = UUID.randomUUID().toString();
         Algorithm algorithm = Algorithm.HMAC256(secret);
-        String uuid = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForValue().set(openid, uuid, EXPIRE_TIME, TimeUnit.MILLISECONDS);
-        logger.info(openid + "&" + uuid);
+        redisUtils.set(openid, secret, EXPIRE_TIME);
+        logger.info(openid + "&" + secret);
 
         // 附带openid信息
         return JWT.create()
-                .withClaim("openid", openid + "&" + uuid)
+                .withClaim("openid", openid)
                 .withExpiresAt(date)
                 .sign(algorithm);
     }
@@ -49,11 +59,11 @@ public class JWTUtil {
      * 校验token是否正确
      *
      * @param token  密钥
-     * @param secret 用户的密码
      * @return 是否正确
      */
-    public static boolean verify(String token, String openid, String secret) {
+    public static boolean verify(String token, String openid) {
         try {
+            String secret = redisUtils.get(openid);
             Algorithm algorithm = Algorithm.HMAC256(secret);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withClaim("openid", openid)
