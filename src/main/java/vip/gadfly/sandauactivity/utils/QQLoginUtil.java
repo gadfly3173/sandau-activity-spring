@@ -1,16 +1,13 @@
 package vip.gadfly.sandauactivity.utils;
 
 public class QQLoginUtil {
-    public static String getQQLoginInfo(String type){
-        String s = "";
-        switch (type){
-            case "client_id":
-                s = "ci";
-            case "client_secret":
-                s = "cs";
-            case "redirect_uri":
-                s = "ru";
-        }
-        return s;
+    public static String getQQLoginClientId(){
+        return "101861872";
+    }
+    public static String getQQLoginClientSecret(){
+        return "18979e56c2c76787b48e050d26817855";
+    }
+    public static String getQQLoginRedirectUri(){
+        return "https://banana.gadfly.vip/#/login/callback";
     }
 }

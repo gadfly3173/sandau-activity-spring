@@ -6,9 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
+import vip.gadfly.sandauactivity.pojo.LoginCode;
 import vip.gadfly.sandauactivity.repos.UserInfo;
 import vip.gadfly.sandauactivity.repos.UserInfoRepository;
 import vip.gadfly.sandauactivity.utils.QQLoginUtil;
@@ -17,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,15 +37,15 @@ public class LoginController {
 
     @Autowired//注入实例
     private UserInfoRepository userInfoRepository;
-
+    @Autowired
     private RestTemplate restTemplate;
 
     @PostMapping("/login/callback")
-    public GlobalJSONResult handleCallbackCode(HttpServletRequest req, HttpServletResponse resp) throws JsonProcessingException {
-        String authorization_code = req.getParameter("code");
+    public GlobalJSONResult handleCallbackCode(@RequestBody LoginCode reqParams) throws JsonProcessingException {
+        String authorization_code = reqParams.getCode();
         if (authorization_code != null && !authorization_code.trim().isEmpty()) {
             //client端的状态值。用于第三方应用防止CSRF攻击。
-            String state = req.getParameter("state");
+            String state = reqParams.getState();
             if (!state.equals("login")) {
                 logger.error("client端的状态值不匹配！");
                 return GlobalJSONResult.errorMsg("state无效，请确认是否为本人操作！");
@@ -57,6 +61,7 @@ public class LoginController {
                     break;
                 }
             }
+            System.out.println(firstCallbackInfo);
             if (access_token != null && !access_token.trim().isEmpty()) {
                 String url = String.format("https://graph.qq.com/oauth2.0/me?access_token=%s", access_token);
                 //第二次模拟客户端发出请求后得到的是带openid的返回数据,格式如下
@@ -73,22 +78,22 @@ public class LoginController {
 
                 //调用jackson
                 ObjectMapper objectMapper = new ObjectMapper();
-                HashMap hashMap = objectMapper.readValue(matcher.group(0), HashMap.class);
+                HashMap<String, String> hashMap = objectMapper.readValue(matcher.group(0), HashMap.class);
 
                 String openid = ((String) hashMap.get("openid"));
 
                 // 获取QQ用户信息
                 String user_info_url = getUserInfoUrl(access_token, openid);
                 String user_result = restTemplate.getForObject(user_info_url, String.class);
-                HashMap user_info_qq = objectMapper.readValue(user_result, HashMap.class);
-                if (!user_info_qq.get("ret").equals(0)) {
+                Map<String, Object> user_info_qq = objectMapper.readValue(user_result, Map.class);
+                if ((int)user_info_qq.get("ret") != 0) {
                     return GlobalJSONResult.errorMsg("用户信息获取失败，请重试");
                 }
 
                 String uid = UUID.nameUUIDFromBytes(openid.getBytes()).toString();
                 if (userInfoRepository.findById(uid).orElse(null) == null) {
                     UserInfo userInfo = new UserInfo(uid, openid, user_info_qq.get("nickname").toString(),
-                            user_info_qq.get("figureurl_2").toString(), new Date().toString());
+                            user_info_qq.get("figureurl_2").toString(), String.valueOf(System.currentTimeMillis()));
                     userInfoRepository.save(userInfo);
                 }
                 String token = JWTUtil.sign(openid);
@@ -105,9 +110,9 @@ public class LoginController {
 
     public static String getUrlForAccessToken(String authorization_code) {
         String grant_type = "authorization_code";
-        String client_id = QQLoginUtil.getQQLoginInfo("client_id");
-        String client_secret = QQLoginUtil.getQQLoginInfo("client_secret");
-        String redirect_uri = QQLoginUtil.getQQLoginInfo("redirect_uri");
+        String client_id = QQLoginUtil.getQQLoginClientId();
+        String client_secret = QQLoginUtil.getQQLoginClientSecret();
+        String redirect_uri = QQLoginUtil.getQQLoginRedirectUri();
 
         String url = String.format("https://graph.qq.com/oauth2.0/token" +
                         "?grant_type=%s&client_id=%s&client_secret=%s&code=%s&redirect_uri=%s",
@@ -117,7 +122,7 @@ public class LoginController {
     }
 
     public static String getUserInfoUrl(String access_token, String openid) {
-        String client_id = QQLoginUtil.getQQLoginInfo("client_id");
+        String client_id = QQLoginUtil.getQQLoginClientId();
         String url = String.format("https://graph.qq.com/user/get_user_info" +
                 "?access_token=%s&oauth_consumer_key=%s&openid=%s", access_token, client_id, openid);
         return url;

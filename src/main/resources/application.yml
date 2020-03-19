@@ -9,6 +9,7 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/sandauactivity?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: root
     password: yishiyile
+
   jpa:
     hibernate:
       ddl-auto: update
