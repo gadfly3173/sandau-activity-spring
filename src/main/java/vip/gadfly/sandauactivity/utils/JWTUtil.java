@@ -7,8 +7,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -20,10 +18,14 @@ public class JWTUtil {
 
     private final static Logger logger = LoggerFactory.getLogger(JWTUtil.class);
 
-    @Autowired
-    private RedisUtils nonStaticRedisUtils;
+    private final RedisUtils nonStaticRedisUtils;
 
     private static RedisUtils redisUtils;
+
+    public JWTUtil(RedisUtils nonStaticRedisUtils) {
+        this.nonStaticRedisUtils = nonStaticRedisUtils;
+    }
+
     @PostConstruct
     public void init() {
         redisUtils = nonStaticRedisUtils;

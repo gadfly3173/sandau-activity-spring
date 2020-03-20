@@ -4,10 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
@@ -16,9 +14,6 @@ import vip.gadfly.sandauactivity.repos.UserInfo;
 import vip.gadfly.sandauactivity.repos.UserInfoRepository;
 import vip.gadfly.sandauactivity.utils.QQLoginUtil;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -35,10 +30,14 @@ public class LoginController {
 
     private final static Logger logger = LoggerFactory.getLogger(LoginController.class);
 
-    @Autowired//注入实例
-    private UserInfoRepository userInfoRepository;
-    @Autowired
-    private RestTemplate restTemplate;
+    //注入实例
+    private final UserInfoRepository userInfoRepository;
+    private final RestTemplate restTemplate;
+
+    public LoginController(UserInfoRepository userInfoRepository, RestTemplate restTemplate) {
+        this.userInfoRepository = userInfoRepository;
+        this.restTemplate = restTemplate;
+    }
 
     @PostMapping("/login/callback")
     public GlobalJSONResult handleCallbackCode(@RequestBody LoginCode reqParams) throws JsonProcessingException {
