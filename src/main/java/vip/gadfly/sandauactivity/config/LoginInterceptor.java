@@ -15,7 +15,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("X-token");
-        if ("".equals(token) || token == null || !JWTUtil.verify(token, JWTUtil.getOpenid(token)))  {
+        if ("".equals(token) || token == null || !JWTUtil.verify(token, JWTUtil.getOpenid(token), JWTUtil.getAccessLevel(token)))  {
             returnJson(response, GlobalJSONResult.errorTokenMsg("登录信息无效，请重新登录！"));
             return false;
         }

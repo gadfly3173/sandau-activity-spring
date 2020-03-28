@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,17 +13,19 @@ public class RedisUtils {
 
 //	@Autowired
 //    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-
-    public void setRedisTemplate(StringRedisTemplate redisTemplate) {
+    public RedisUtils(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
-    public StringRedisTemplate getRedisTemplate() {
-        return this.redisTemplate;
-    }
+//    public void setRedisTemplate(StringRedisTemplate redisTemplate) {
+//        this.redisTemplate = redisTemplate;
+//    }
+//
+//    public StringRedisTemplate getRedisTemplate() {
+//        return this.redisTemplate;
+//    }
 
     public static RedisUtils redisUtils;
 

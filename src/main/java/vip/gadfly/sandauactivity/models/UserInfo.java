@@ -1,9 +1,12 @@
-package vip.gadfly.sandauactivity.repos;
+package vip.gadfly.sandauactivity.models;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.hibernate.annotations.DynamicUpdate;
+
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
+@DynamicUpdate
 public class UserInfo {
 
     @Id
@@ -15,9 +18,9 @@ public class UserInfo {
 
     private String accessLevel;
 
-    private String createTime;
+    private Long createTime;
 
-    private String updateTime;
+    private Long updateTime;
 
     private String avatarUrl;
 
@@ -25,14 +28,16 @@ public class UserInfo {
 
     private String name;
 
-    private String phone;
+    private Long phone;
 
+    @OneToMany(mappedBy = "userInfo",cascade= CascadeType.ALL,fetch= FetchType.LAZY)
+    private List<Activity> activity;
 
     public UserInfo() {
 
     }
 
-    public UserInfo(String id, String openid, String nickname, String avatarUrl, String createTime) {
+    public UserInfo(String id, String openid, String nickname, String avatarUrl, Long createTime) {
         this.id = id;
         this.openid = openid;
         this.nickname = nickname;
@@ -64,11 +69,11 @@ public class UserInfo {
         this.nickname = nickname;
     }
 
-    public String getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(String createTime) {
+    public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
 
@@ -104,19 +109,19 @@ public class UserInfo {
         this.name = name;
     }
 
-    public String getPhone() {
+    public Long getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
+    public void setPhone(Long phone) {
         this.phone = phone;
     }
 
-    public String getUpdateTime() {
+    public Long getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(String updateTime) {
+    public void setUpdateTime(Long updateTime) {
         this.updateTime = updateTime;
     }
 }

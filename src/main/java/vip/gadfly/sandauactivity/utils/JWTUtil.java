@@ -40,7 +40,7 @@ public class JWTUtil {
      * @param openid qq_openid
      * @return 加密的token
      */
-    public static String sign(String openid) {
+    public static String sign(String openid, String access_level) {
         Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
         if (redisUtils.hasKey(openid)) {
             redisUtils.del(openid);
@@ -53,6 +53,7 @@ public class JWTUtil {
         // 附带openid信息
         return JWT.create()
                 .withClaim("openid", openid)
+                .withClaim("access_level", access_level)
                 .withExpiresAt(date)
                 .sign(algorithm);
     }
@@ -63,12 +64,13 @@ public class JWTUtil {
      * @param token  密钥
      * @return 是否正确
      */
-    public static boolean verify(String token, String openid) {
+    public static boolean verify(String token, String openid, String access_level) {
         try {
             String secret = redisUtils.get(openid);
             Algorithm algorithm = Algorithm.HMAC256(secret);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withClaim("openid", openid)
+                    .withClaim("access_level", access_level)
                     .build();
             DecodedJWT jwt = verifier.verify(token);
         } catch (JWTVerificationException exception) {
@@ -85,6 +87,10 @@ public class JWTUtil {
     public static String getOpenid(String token) {
         DecodedJWT jwt = JWT.decode(token);
         return jwt.getClaim("openid").asString();
+    }
+    public static String getAccessLevel(String token) {
+        DecodedJWT jwt = JWT.decode(token);
+        return jwt.getClaim("access_level").asString();
     }
 
 }

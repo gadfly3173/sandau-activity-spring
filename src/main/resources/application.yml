@@ -2,6 +2,13 @@ server:
   port: 19550
   servlet:
     context-path: /api
+  # 下面是配置undertow作为服务器的参数
+  undertow:
+    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
+    # 每块buffer的空间大小,越小的空间被利用越充分
+    buffer-size: 1024
+    # 是否分配的直接内存
+    direct-buffers: true
 
 spring:
   datasource:
@@ -11,6 +18,7 @@ spring:
     password: yishiyile
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -22,7 +30,6 @@ spring:
     database: 0
     timeout: 300
 
-  devtools:
-    restart:
-      enabled: true
-      additional-paths: src/main/java
+  servlet:
+    multipart:
+      max-file-size: 4MB
