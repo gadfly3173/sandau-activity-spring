@@ -30,7 +30,7 @@ public class ImgUploadController {
         this.restTemplate = restTemplate;
     }
 
-    @PostMapping("/upload/img")
+    @PostMapping(value = "/upload/img", consumes= { MediaType.MULTIPART_FORM_DATA_VALUE})
     public GlobalJSONResult uploadHandler(@RequestParam("file") MultipartFile reqData) throws JsonProcessingException {
         String imgData = uploadViaSmms(reqData);
         //调用jackson

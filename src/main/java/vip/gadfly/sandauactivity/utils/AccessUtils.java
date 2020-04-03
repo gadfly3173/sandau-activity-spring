@@ -15,9 +15,6 @@ public class AccessUtils {
     public static AccessUtils accessUtils;
 
     public Boolean isAdmin(String token) {
-        if (JWTUtil.getAccessLevel(token) == "ADMIN") {
-            return true;
-        }
-        return false;
+        return JWTUtil.getAccessLevel(token) == "ADMIN";
     }
 }

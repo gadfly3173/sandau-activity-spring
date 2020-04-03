@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +41,7 @@ public class LoginController {
         this.restTemplate = restTemplate;
     }
 
-    @PostMapping("/login/callback")
+    @PostMapping(value = "/login/callback", consumes= { MediaType.APPLICATION_JSON_VALUE})
     public GlobalJSONResult handleCallbackCode(@RequestBody LoginCode reqParams) throws JsonProcessingException {
         String authorization_code = reqParams.getCode();
         if (StringUtils.isBlank(authorization_code)) {
@@ -53,7 +54,7 @@ public class LoginController {
             return GlobalJSONResult.errorMsg("state无效，请确认是否为本人操作！");
         }
         String access_token = getAccessToken(authorization_code);
-        if (!StringUtils.isBlank(access_token)) {
+        if (StringUtils.isBlank(access_token)) {
             return GlobalJSONResult.errorMsg("access_token获取失败，请重新授权！");
         }
         String url = String.format("https://graph.qq.com/oauth2.0/me?access_token=%s", access_token);
@@ -73,7 +74,7 @@ public class LoginController {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, String> hashMap = objectMapper.readValue(matcher.group(0), HashMap.class);
 
-        String openid = ((String) hashMap.get("openid"));
+        String openid = hashMap.get("openid");
 
         // 获取QQ用户信息
         String user_info_url = getUserInfoUrl(access_token, openid);

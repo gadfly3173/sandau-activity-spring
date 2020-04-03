@@ -1,6 +1,7 @@
 package vip.gadfly.sandauactivity.controllers;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 import vip.gadfly.sandauactivity.models.UserInfo;
@@ -29,7 +30,7 @@ public class UserInfoController {
 
     }
 
-    @PostMapping("/user/update")
+    @PostMapping(value = "/user/update", consumes= { MediaType.APPLICATION_JSON_VALUE})
     public GlobalJSONResult updateUserInfo(@RequestBody UserInfo userInfoReq, @RequestHeader(value = "X-token") String token) {
         if (!userInfoReq.getId().equals(UUID.nameUUIDFromBytes(JWTUtil.getOpenid(token).getBytes()).toString())) {
             System.out.println(userInfoReq.getId());
@@ -42,12 +43,11 @@ public class UserInfoController {
         }
 
         UserInfo userInfo = userInfoRepository.findById(userInfoReq.getId()).get();
-
-        if (StringUtils.isNotBlank(String.valueOf(userInfoReq.getPhone())) && !userInfo.getPhone().equals(userInfoReq.getPhone())) {
+        if (StringUtils.isNotBlank(String.valueOf(userInfoReq.getPhone()))) {
             if (!String.valueOf(userInfoReq.getPhone()).matches("^1(3[0-9]|4[57]|5[0-35-9]|8[0-9]|70)\\d{8}$") || String.valueOf(userInfoReq.getPhone()).length() != 11) {
                 return GlobalJSONResult.errorMsg("手机号不正确！");
             }
-            if (userInfoRepository.existsByPhone(userInfoReq.getPhone())) {
+            if (userInfoRepository.existsByPhone(userInfoReq.getPhone()) && !userInfo.getPhone().equals(userInfoReq.getPhone())) {
                 return GlobalJSONResult.errorMsg("手机号已被登记！");
             }
         }
