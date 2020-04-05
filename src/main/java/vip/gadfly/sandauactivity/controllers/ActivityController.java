@@ -6,13 +6,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import vip.gadfly.sandauactivity.models.Activity;
 import vip.gadfly.sandauactivity.models.Categories;
 import vip.gadfly.sandauactivity.models.UserInfo;
-import vip.gadfly.sandauactivity.models.Activity;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 import vip.gadfly.sandauactivity.repos.ActivityRepository;
-import vip.gadfly.sandauactivity.repos.CategoriesRepository;
-import vip.gadfly.sandauactivity.repos.UserInfoRepository;
 import vip.gadfly.sandauactivity.utils.AccessUtils;
 import vip.gadfly.sandauactivity.utils.JWTUtil;
 
@@ -22,21 +20,16 @@ import java.util.*;
 @RequestMapping("/activity")
 public class ActivityController {
 
-    //注入实例
-    private final UserInfoRepository userInfoRepository;
-    private final CategoriesRepository categoriesRepository;
     private final ActivityRepository activityRepository;
     private final AccessUtils accessUtils;
 
-    public ActivityController(UserInfoRepository userInfoRepository, AccessUtils accessUtils,
-                              CategoriesRepository categoriesRepository, ActivityRepository activityRepository) {
-        this.userInfoRepository = userInfoRepository;
-        this.categoriesRepository = categoriesRepository;
+    public ActivityController(AccessUtils accessUtils, ActivityRepository activityRepository) {
+        //注入实例
         this.activityRepository = activityRepository;
         this.accessUtils = accessUtils;
     }
 
-    @PostMapping(value = "/create", consumes= { MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/create", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public GlobalJSONResult createActivity(@RequestBody Activity reqActivity, @RequestHeader(value = "X-token") String token) {
         String userId = UUID.nameUUIDFromBytes(JWTUtil.getOpenid(token).getBytes()).toString();
         if (!accessUtils.isAdmin(token)) {
@@ -62,21 +55,21 @@ public class ActivityController {
     }
 
     @GetMapping("/list")
-    public GlobalJSONResult queryActivity(String title, int pageNum, int pageSize) {
-         if (StringUtils.isBlank(title)) {
-             return GlobalJSONResult.ok(getNoTitleResultData(pageSize), "活动查询成功");
-         }
+    public GlobalJSONResult queryActivity(@RequestParam String title, @RequestParam int pageNum, @RequestParam int pageSize) {
+        if (StringUtils.isBlank(title)) {
+            return GlobalJSONResult.ok(getNoTitleResultData(pageSize), "活动查询成功");
+        }
 
-         return GlobalJSONResult.ok(getResultData(title, pageNum, pageSize), "活动查询成功");
+        return GlobalJSONResult.ok(getResultData(title, pageNum, pageSize), "活动查询成功");
     }
 
     @GetMapping("/list/bycat")
-    public GlobalJSONResult queryActivityByCat(String catid, int pageNum, int pageSize) {
-         if (StringUtils.isBlank(catid)) {
-             return GlobalJSONResult.ok(getNoTitleResultData(pageSize), "活动查询成功");
-         }
+    public GlobalJSONResult queryActivityByCat(@RequestParam Integer catid, @RequestParam int pageNum, @RequestParam int pageSize) {
+        if (catid == null) {
+            return GlobalJSONResult.errorMsg("分类id不得为空");
+        }
 
-         return GlobalJSONResult.ok(getResultData(catid, pageNum, pageSize), "活动查询成功");
+        return GlobalJSONResult.ok(getResultDataByCat(catid, pageNum, pageSize), "活动查询成功");
     }
 
     @GetMapping("/actdetail")
@@ -114,12 +107,18 @@ public class ActivityController {
     }
 
 
-    
     private Map<String, Object> getResultData(String title, int pageNum, int pageSize) {
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
         Page<Activity> pageActivity = activityRepository.findByTitleLikeOrBriefLike("%" + title + "%",
                 "%" + title + "%", pageable);
         return getResultDataFromPage(pageActivity, pageNum, pageSize);
+    }
+
+    private Map<String, Object> getResultDataByCat(Integer catid, int pageNum, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+        Categories category = new Categories(catid);
+        Page<Activity> pageActivity = activityRepository.findByCategories(category, pageable);
+        return getResultDataFromPage(pageActivity, pageActivity.getNumber() + 1, pageActivity.getSize());
     }
 
     private Map<String, Object> getResultDataFromPage(Page<Activity> pageActivity, int i, int size) {

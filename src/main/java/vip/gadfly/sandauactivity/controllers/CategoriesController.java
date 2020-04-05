@@ -1,5 +1,6 @@
 package vip.gadfly.sandauactivity.controllers;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vip.gadfly.sandauactivity.models.Categories;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
@@ -21,7 +22,7 @@ public class CategoriesController {
         return GlobalJSONResult.ok(categoriesRepository.findAll());
     }
 
-    @PostMapping("/categories/create")
+    @PostMapping(value = "/categories/create", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public GlobalJSONResult createCategory(@RequestBody Categories category, @RequestHeader(value = "X-token") String token) {
         if (!accessUtils.isAdmin(token)) {
             return GlobalJSONResult.errorMsg("权限不足，无法新增分类");
