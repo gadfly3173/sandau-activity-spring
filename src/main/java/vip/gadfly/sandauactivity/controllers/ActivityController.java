@@ -8,8 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vip.gadfly.sandauactivity.models.Categories;
 import vip.gadfly.sandauactivity.models.UserInfo;
-import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 import vip.gadfly.sandauactivity.models.Activity;
+import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 import vip.gadfly.sandauactivity.repos.ActivityRepository;
 import vip.gadfly.sandauactivity.repos.CategoriesRepository;
 import vip.gadfly.sandauactivity.repos.UserInfoRepository;
@@ -48,12 +48,14 @@ public class ActivityController {
             return GlobalJSONResult.errorMsg("请勿提交非法参数！");
         }
         reqActivity.setCreateTime(System.currentTimeMillis());
-        reqActivity.setUserInfo(userInfoRepository.findById(userId).orElse(null));
-        Categories setCategory = categoriesRepository.findById(reqActivity.getCategories().getId());
-        if (setCategory == null) {
-            setCategory = categoriesRepository.findById(1);
-        }
-        reqActivity.setCategories(setCategory);
+        UserInfo userInfo = new UserInfo(userId);
+        Categories category = new Categories(reqActivity.getCategories().getId());
+        reqActivity.setUserInfo(userInfo);
+//        Categories setCategory = categoriesRepository.findById(reqActivity.getCategories().getId());
+//        if (setCategory == null) {
+//            setCategory = categoriesRepository.findById(1);
+//        }
+        reqActivity.setCategories(category);
         activityRepository.save(reqActivity);
 
         return GlobalJSONResult.ok();
@@ -66,6 +68,15 @@ public class ActivityController {
          }
 
          return GlobalJSONResult.ok(getResultData(title, pageNum, pageSize), "活动查询成功");
+    }
+
+    @GetMapping("/list/bycat")
+    public GlobalJSONResult queryActivityByCat(String catid, int pageNum, int pageSize) {
+         if (StringUtils.isBlank(catid)) {
+             return GlobalJSONResult.ok(getNoTitleResultData(pageSize), "活动查询成功");
+         }
+
+         return GlobalJSONResult.ok(getResultData(catid, pageNum, pageSize), "活动查询成功");
     }
 
     @GetMapping("/actdetail")
@@ -102,6 +113,8 @@ public class ActivityController {
         return getResultDataFromPage(pageActivity, pageActivity.getNumber() + 1, pageActivity.getSize());
     }
 
+
+    
     private Map<String, Object> getResultData(String title, int pageNum, int pageSize) {
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
         Page<Activity> pageActivity = activityRepository.findByTitleLikeOrBriefLike("%" + title + "%",

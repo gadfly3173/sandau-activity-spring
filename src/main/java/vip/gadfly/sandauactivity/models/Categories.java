@@ -17,12 +17,16 @@ public class Categories {
     private Long createTime;
 
     private Long updateTime;
-
-    @OneToMany(mappedBy = "categories",cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    private List<Activity> activity;
+//
+//    @OneToMany(mappedBy = "categories",cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+//    private List<Activity> activity;
 
     public Categories() {
 
+    }
+
+    public Categories(Integer id) {
+        this.id = id;
     }
 
     public Categories(String category, Long createTime) {

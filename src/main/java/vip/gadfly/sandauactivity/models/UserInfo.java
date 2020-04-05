@@ -29,12 +29,16 @@ public class UserInfo {
     private String name;
 
     private Long phone;
-
-    @OneToMany(mappedBy = "userInfo",cascade= CascadeType.ALL,fetch= FetchType.LAZY)
-    private List<Activity> activity;
+//
+//    @OneToMany(mappedBy = "userInfo",cascade= CascadeType.ALL,fetch= FetchType.LAZY)
+//    private List<Activity> activity;
 
     public UserInfo() {
 
+    }
+
+    public UserInfo(String id) {
+        this.id = id;
     }
 
     public UserInfo(String id, String openid, String nickname, String avatarUrl, Long createTime) {
