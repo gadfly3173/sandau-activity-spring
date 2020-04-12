@@ -33,8 +33,6 @@ public class UserInfoController {
     @PostMapping(value = "/user/update", consumes= { MediaType.APPLICATION_JSON_VALUE})
     public GlobalJSONResult updateUserInfo(@RequestBody UserInfo userInfoReq, @RequestHeader(value = "X-token") String token) {
         if (!userInfoReq.getId().equals(UUID.nameUUIDFromBytes(JWTUtil.getOpenid(token).getBytes()).toString())) {
-            System.out.println(userInfoReq.getId());
-            System.out.println(UUID.nameUUIDFromBytes(JWTUtil.getOpenid(token).getBytes()).toString());
             return GlobalJSONResult.errorMsg("非法id，请检查！");
         }
 

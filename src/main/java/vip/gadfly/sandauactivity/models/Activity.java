@@ -54,11 +54,11 @@ public class Activity {
     @Version
     private int version;
 
-    @ManyToOne(cascade={CascadeType.MERGE,CascadeType.REFRESH},optional=false)
+    @ManyToOne(optional=false)
     @JoinColumn(name = "category_id")
     private Categories categories;
 
-    @ManyToOne(cascade={CascadeType.MERGE,CascadeType.REFRESH},optional=false)
+    @ManyToOne(optional=false)
     @JoinColumn(name = "user_id")
     private UserInfo userInfo;
 
@@ -77,6 +77,10 @@ public class Activity {
         this.createTime = createTime;
         this.categories = categories;
         this.userInfo = userInfo;
+    }
+
+    public Activity(String id) {
+        this.id = id;
     }
 
     public String getId() {

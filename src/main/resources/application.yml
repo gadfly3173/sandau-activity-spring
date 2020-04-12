@@ -31,6 +31,11 @@ spring:
     database: 0
     timeout: 300
 
+  data:
+    redis:
+      repositories:
+        enabled: false
+
   servlet:
     multipart:
       max-file-size: 4MB

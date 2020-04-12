@@ -3,7 +3,6 @@ package vip.gadfly.sandauactivity.models;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @DynamicUpdate

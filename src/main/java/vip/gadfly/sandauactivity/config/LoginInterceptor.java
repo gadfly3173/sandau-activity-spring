@@ -26,17 +26,10 @@ public class LoginInterceptor implements HandlerInterceptor {
     private void returnJson(HttpServletResponse response, Object json) throws Exception{
         ObjectMapper mapper = new ObjectMapper();
         String strJson = mapper.writeValueAsString(json);
-        PrintWriter writer = null;
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=utf-8");
-        try {
-            writer = response.getWriter();
+        try (PrintWriter writer = response.getWriter()) {
             writer.write(strJson);
-
-        } catch (IOException e) {
-        } finally {
-            if (writer != null)
-                writer.close();
         }
     }
 

@@ -3,7 +3,6 @@ package vip.gadfly.sandauactivity.models;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @DynamicUpdate
@@ -17,9 +16,6 @@ public class Categories {
     private Long createTime;
 
     private Long updateTime;
-//
-//    @OneToMany(mappedBy = "categories",cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-//    private List<Activity> activity;
 
     public Categories() {
 

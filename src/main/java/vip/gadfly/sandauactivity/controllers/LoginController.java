@@ -106,6 +106,7 @@ public class LoginController {
             userInfoRepository.save(userInfo);
             access_level = userInfo.getAccessLevel();
         }
+        user_info_qq.put("access_level", access_level);
         return JWTUtil.sign(openid, access_level);
     }
 
@@ -124,7 +125,7 @@ public class LoginController {
         return access_token;
     }
 
-    public static String getUrlForAccessToken(String authorization_code) {
+    private static String getUrlForAccessToken(String authorization_code) {
         String grant_type = "authorization_code";
         String client_id = QQLoginUtil.getQQLoginClientId();
         String client_secret = QQLoginUtil.getQQLoginClientSecret();
@@ -137,7 +138,7 @@ public class LoginController {
         return url;
     }
 
-    public static String getUserInfoUrl(String access_token, String openid) {
+    private static String getUserInfoUrl(String access_token, String openid) {
         String client_id = QQLoginUtil.getQQLoginClientId();
         String url = String.format("https://graph.qq.com/user/get_user_info" +
                 "?access_token=%s&oauth_consumer_key=%s&openid=%s", access_token, client_id, openid);
