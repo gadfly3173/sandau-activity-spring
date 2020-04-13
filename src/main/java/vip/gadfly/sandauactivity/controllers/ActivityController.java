@@ -8,9 +8,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vip.gadfly.sandauactivity.models.Activity;
 import vip.gadfly.sandauactivity.models.Categories;
+import vip.gadfly.sandauactivity.models.SignUp;
 import vip.gadfly.sandauactivity.models.UserInfo;
 import vip.gadfly.sandauactivity.pojo.GlobalJSONResult;
 import vip.gadfly.sandauactivity.repos.ActivityRepository;
+import vip.gadfly.sandauactivity.repos.SignUpRepository;
 import vip.gadfly.sandauactivity.utils.AccessUtils;
 import vip.gadfly.sandauactivity.utils.JWTUtil;
 
@@ -21,11 +23,13 @@ import java.util.*;
 public class ActivityController {
 
     private final ActivityRepository activityRepository;
+    private final SignUpRepository signUpRepository;
     private final AccessUtils accessUtils;
 
-    public ActivityController(AccessUtils accessUtils, ActivityRepository activityRepository) {
+    public ActivityController(AccessUtils accessUtils, ActivityRepository activityRepository, SignUpRepository signUpRepository) {
         //注入实例
         this.activityRepository = activityRepository;
+        this.signUpRepository = signUpRepository;
         this.accessUtils = accessUtils;
     }
 
@@ -73,7 +77,7 @@ public class ActivityController {
     }
 
     @GetMapping("/actdetail")
-    public GlobalJSONResult getActivityDetail(@RequestParam String id) {
+    public GlobalJSONResult getActivityDetail(@RequestParam String id, @RequestHeader(value = "X-token") String token) {
         if (StringUtils.isBlank(id)) {
             return GlobalJSONResult.errorMsg("id不得为空！");
         }
@@ -81,6 +85,10 @@ public class ActivityController {
         if (activity == null || StringUtils.isBlank(activity.toString())) {
             return GlobalJSONResult.errorMsg("活动查询失败！请检查提交参数！");
         }
+        String userId = UUID.nameUUIDFromBytes(JWTUtil.getOpenid(token).getBytes()).toString();
+        UserInfo userInfo = new UserInfo(userId);
+        SignUp signUp = signUpRepository.findByUserInfoAndActivity(userInfo, activity);
+        String status = signUp == null ? null : signUp.getStatus();
         HashMap<String, Object> act = new HashMap<>();
         act.put("id", activity.getId());
         act.put("title", activity.getTitle());
@@ -97,6 +105,7 @@ public class ActivityController {
         act.put("categories", activity.getCategories());
         UserInfo user = activity.getUserInfo();
         act.put("user", StringUtils.isNotBlank(user.getName()) ? user.getName() : user.getNickname());
+        act.put("status", status);
         return GlobalJSONResult.ok(act, "活动查询成功");
     }
 
